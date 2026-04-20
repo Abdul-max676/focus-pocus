@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1–25 Challenge</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 10px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+    }
+
+    #controls {
+      margin-bottom: 10px;
+    }
+
+    input, button {
+      width: 90%;
+      max-width: 280px;
+      padding: 12px;
+      margin: 5px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      background: #00aaff;
+      color: white;
+      cursor: pointer;
+    }
+
+    #timer {
+      font-size: 1.3rem;
+      margin-top: 5px;
+    }
+
+    #progress {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-width: 400px;
+      margin: 15px auto;
+    }
+
+    .box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(18px, 5vw, 28px);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .box:active {
+      transform: scale(0.95);
+    }
+
+    .correct {
+      background: green !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>1–25 Challenge</h1>
+
+  <div id="controls">
+    <input type="number" id="timeInput" value="60" min="10" max="300">
+    <button onclick="startGame()">New Challenge</button>
+    <div id="timer">Time: --</div>
+    <div id="progress">Progress: 0 / 25</div>
+  </div>
+
+  <div id="grid"></div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const timerDisplay = document.getElementById("timer");
+    const progressDisplay = document.getElementById("progress");
+    const timeInput = document.getElementById("timeInput");
+
+    let numbers = [];
+    let current = 1;
+    let timer;
+    let timeLeft = 0;
+    let gameActive = false;
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function renderGrid() {
+      grid.innerHTML = "";
+
+      numbers.forEach(num => {
+        const box = document.createElement("div");
+        box.className = "box";
+        box.textContent = num;
+
+        box.onclick = () => handleClick(box, num);
+
+        grid.appendChild(box);
+      });
+    }
+
+    function handleClick(box, num) {
+      if (!gameActive) return;
+
+      if (num === current) {
+        box.classList.add("correct");
+        current++;
+        updateProgress();
+
+        if (current > 25) {
+          endGame("You win 🎉");
+        }
+      }
+    }
+
+    function updateProgress() {
+      progressDisplay.textContent = `Progress: ${current - 1} / 25`;
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = parseInt(timeInput.value) || 60;
+      timerDisplay.textContent = "Time: " + timeLeft;
+
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = "Time: " + timeLeft;
+
+        if (timeLeft <= 0) {
+          endGame("Time's up 💀");
+        }
+      }, 1000);
+    }
+
+    function endGame(message) {
+      clearInterval(timer);
+      gameActive = false;
+      timerDisplay.textContent = message;
+    }
+
+    function startGame() {
+      current = 1;
+      gameActive = true;
+
+      numbers = shuffle([...Array(25).keys()].map(n => n + 1));
+      renderGrid();
+      updateProgress();
+
+      startTimer();
+    }
+
+    // Initial state → ordered, no timer
+    numbers = [...Array(25).keys()].map(n => n + 1);
+    renderGrid();
+    updateProgress();
+  </script>
+
+</body>
+</html>
